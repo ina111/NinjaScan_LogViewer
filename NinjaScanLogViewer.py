@@ -5,6 +5,7 @@
 from numpy import loadtxt
 from numpy import where
 import matplotlib.pyplot as plt
+import matplotlib.backends
 #from matplotlib.backends.backend_pdf import PdfPages
 
 class NinjaScanLogViewer:
@@ -32,6 +33,15 @@ class NinjaScanLogViewer:
         except:
             print "load file error!"
             raise
+            
+    def load_HPA(self):
+        # HPS naviのファイル読み込み
+        file_H = self.filename + "_H.csv"
+        try:
+            self.results_H = loadtxt(file_H, delimiter=',', skiprows = 1,usecols = (0,1,2,3,4,5,6,7,8,9,10,11,12))
+        except:
+            print "load file error!"
+            raise
 
         
     def check_time(self):
@@ -40,6 +50,10 @@ class NinjaScanLogViewer:
         self.load()
         return [min(self.results_A[:,0]), max(self.results_A[:,0])]
         
+    def check_time_HPA(self):
+        print "Now read log file..."
+        self.load_HPA()
+        return [min(self.results_H[:,0]), max(self.results_H[:,0])]
     
     def plot(self):
         print "Now read log file..."
@@ -141,7 +155,52 @@ class NinjaScanLogViewer:
 #        pp.savefig()
     
 #        pp.close()
+    
+    def plot_HPA(self):
+        print "Now read log file..."
+        if self.isloaded == False:
+            self.load_HPA()
+        print "Now plot log file..."
+        
+        time_start = self.time_start
+        time_end = self.time_end
+
+        start_H = where(self.results_H[:,0] > time_start)[0][0]
+        end_H = where(self.results_H[:,0] < time_end)[0][-1]
+        time_H = self.results_H[start_H:end_H,0]    
+#        start_H = self.results_H[0,0]
+#        end_H = self.results_H[-1,0]
+#        time_H = self.results_H[start_H:end_H,0]
+        
+        samplerate = 25.0
+        calib_ias1 = 0.00053
+        calib_ias2 = 0.35
+        calib_alt = 0.01
+        speed = samplerate * calib_ias1 * self.results_H[start_H:end_H,3] + calib_ias2
+        alt = calib_alt * self.results_H[start_H:end_H,4]
+                
+        # ==== plot ====
+        plt.close('all')
+#        pp = PdfPages(u'log.pdf')
+        
+        figsize = (12,7)
+        fig = plt.figure(figsize=figsize)
+        fig = plt.gcf()
+        
+        plt.subplot(211)
+        plt.plot(time_H, speed, label = 'speed')
+        plt.ylabel('air speed [m/s]')
+        plt.grid(True, which = 'both')
+        plt.subplot(212)
+        plt.plot(time_H, alt, 'r', label = 'altitude')
+        plt.xlabel('time (sec)')
+        plt.ylabel('altitude (m)')
+        plt.grid(True,which = 'both')
 
 if __name__ == '__main__':
-    nslv = NinjaScanLogViewer("NinjaScanLite_LOG", 338460000, 338600000, 338476000)
-    nslv.plot()
+#    nslv = NinjaScanLogViewer("NinjaScanLite_LOG", 338460000, 338600000, 338476000)
+#    nslv.plot()
+    
+    #HPA_Navi用テスト
+    nslv = NinjaScanLogViewer("NinjaScanLite_LOG", 521360, 521498, 521360)
+    nslv.plot_HPA()
