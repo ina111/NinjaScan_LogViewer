@@ -7,6 +7,7 @@
 #from matplotlib.backends.backend_pdf import PdfPages
 import sys
 import os
+import codecs
 from PySide.QtCore import *
 from PySide.QtGui import *
 import NinjaScanLogViewer as nslv
@@ -43,6 +44,13 @@ class Form(QDialog):
         self.button_check.setEnabled(False)
         self.button_check.setStyleSheet("font: 12pt")    
         self.button_check.setIcon(self.style().standardIcon(QStyle.SP_DialogApplyButton))
+        self.radio_Ninja = QRadioButton("NinjaScan")
+        self.radio_Ninja.setChecked(True)
+        self.radio_HPA = QRadioButton("HPA_Navi")  
+        self.radio_HPA.setCheckable(False)
+        self.group = QButtonGroup()
+        self.group.addButton(self.radio_Ninja)
+        self.group.addButton(self.radio_HPA)
         self.button_plot = QPushButton("Plot")
         self.button_plot.setEnabled(False)
         self.button_plot.setStyleSheet("font: 12pt")
@@ -69,11 +77,23 @@ class Form(QDialog):
         sublayout3.addWidget(self.label_press, 3, 0, Qt.AlignRight)
         sublayout3.addWidget(self.edit_press, 3, 1)
         
+        sublayout4 = QHBoxLayout()
+        sublayout4.addWidget(self.radio_Ninja)
+        sublayout4.addWidget(self.radio_HPA)
+        
         toplayout.addLayout(sublayout1)
         toplayout.addSpacing(10)
         toplayout.addWidget(self.button_check)
         toplayout.addSpacing(10)
         toplayout.addLayout(sublayout3)
+        self.line1 = QFrame()
+        self.line1.setFrameStyle( QFrame.HLine| QFrame.Sunken )
+        toplayout.addWidget( self.line1 )
+        toplayout.addLayout(sublayout4)
+        self.line2 = QFrame()
+        self.line2.setFrameStyle( QFrame.HLine| QFrame.Sunken )
+        toplayout.addWidget( self.line2 )
+        
         toplayout.addWidget(self.button_plot)
 
         # ダイアログのレイアウトを設定します
@@ -99,6 +119,7 @@ class Form(QDialog):
         # ファイルが良いかどうか確認。一回確認したらそのままplotボタンを有効化
         # 確認したら、最大値などを設定するように仕向ける
         self.path = self.edit_dir.text() + "\\" + self.edit_path.text()
+        self.path = self.path.encode('shift-jis')
         print self.path
         try:
             widget = WaitDialog()

@@ -138,7 +138,7 @@ class NinjaScanLogViewer:
         plt.legend(loc = 'best')
         plt.grid(True,which = 'both')
         plt.show()
-        pp.savefig()
+#        pp.savefig()
     
 #        pp.close()
 
